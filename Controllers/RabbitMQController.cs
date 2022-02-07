@@ -15,13 +15,13 @@ namespace Fundamentos.RabbitMQ.Generico.Controllers
             _publisher = publisher;
 
             _consumer = consumer;
-            _consumer.Add("paymentqueue", 2);
+            _consumer.Add("processar-pagamentos", 2);
         }
 
         [HttpPost]
         public IActionResult Publicar([FromBody] Message payment)
         {
-            _publisher.HandlePublish(payment, "payment");
+            _publisher.HandlePublish(payment, exchange: "novos-pedidos");
             return Ok();
         }
     }

@@ -9,11 +9,11 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
     {
         private readonly IModel model;
         private readonly ILogger<Consumer> logger;
-        private string queue;
         private EventingBasicConsumer eventingBasicConsumer;
         private bool isRunning;
 
         public int MessagesPerSecond { get; private set; }
+        public string Queue;
         public string Id { get; }
 
         public Consumer(IModel model, ILogger<Consumer> logger)
@@ -100,7 +100,7 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
 
         public void Initialize(string queue, int messagesPerSecond)
         {
-            this.queue = queue;
+            this.Queue = queue;
             this.MessagesPerSecond = messagesPerSecond;
 
             if (this.MessagesPerSecond > 0)
@@ -109,7 +109,7 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
                 this.model.SetPrefetchCount((ushort)(1000));
 
             this.isRunning = true;
-            this.model.BasicConsume(this.queue, false, this.eventingBasicConsumer);
+            this.model.BasicConsume(this.Queue, false, this.eventingBasicConsumer);
         }
     }
 }
