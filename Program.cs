@@ -19,7 +19,7 @@ builder.Services.AddSingleton(sp => new ConnectionFactory()
 builder.Services.AddTransientWithRetry<IConnection, BrokerUnreachableException>(sp => sp.GetRequiredService<ConnectionFactory>().CreateConnection());
 builder.Services.AddTransient(sp => sp.GetRequiredService<IConnection>().CreateModel());
 
-builder.Services.AddSingleton<ConsumerManager>();
+builder.Services.AddTransient<ConsumerManager>();
 builder.Services.AddTransient<Publisher>();
 builder.Services.AddTransient<Consumer>();
 
