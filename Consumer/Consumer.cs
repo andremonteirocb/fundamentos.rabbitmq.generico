@@ -98,7 +98,7 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             }
         }
 
-        public void Initialize(string queue, int messagesPerSecond)
+        public void QueueBind(string queue, int messagesPerSecond)
         {
             this.Queue = queue;
             this.MessagesPerSecond = messagesPerSecond;

@@ -8,14 +8,10 @@ namespace Fundamentos.RabbitMQ.Generico.Controllers
     [Route("[controller]")]
     public class RabbitMQController : ControllerBase
     {
-        private ConsumerManager _consumer;
         private Publisher _publisher;
-        public RabbitMQController(Publisher publisher, ConsumerManager consumer)
+        public RabbitMQController(Publisher publisher)
         {
             _publisher = publisher;
-
-            _consumer = consumer;
-            _consumer.Add("processar-pagamentos", 2);
         }
 
         [HttpPost]
