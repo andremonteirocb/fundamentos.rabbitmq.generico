@@ -8,16 +8,18 @@ namespace Fundamentos.RabbitMQ.Generico.Controllers
     [Route("[controller]")]
     public class RabbitMQController : ControllerBase
     {
+        private IConfiguration _configuration;
         private Publisher _publisher;
-        public RabbitMQController(Publisher publisher)
+        public RabbitMQController(Publisher publisher, IConfiguration configuration)
         {
+            _configuration = configuration;
             _publisher = publisher;
         }
 
         [HttpPost]
         public IActionResult Publicar([FromBody] Message payment)
         {
-            _publisher.HandlePublish(payment, exchange: "novos-pedidos");
+            _publisher.HandlePublish(payment, exchange: _configuration["RabbitMqConfig:DirectExchange"]);
             return Ok();
         }
     }

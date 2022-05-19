@@ -22,9 +22,6 @@ builder.Services.AddTransient(sp => sp.GetRequiredService<IConnection>().CreateM
 
 builder.Services.AddTransient<Publisher>();
 builder.Services.AddTransient<Consumer>();
-builder.Services.BuildServiceProvider()
-                .GetRequiredService<Consumer>()
-                .Initialize("processar-pagamentos", 2);
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -33,7 +30,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.GetService<Consumer>().QueueBind("processar-pagamentos", 2);
+var model = app.GetService<IModel>();
+model.ExchangeDeclare(app.Configuration["RabbitMqConfig:DirectExchange"], ExchangeType.Direct, true);
+model.QueueDeclare(app.Configuration["RabbitMqConfig:Queue"], true, false, false, null);
+model.QueueBind(app.Configuration["RabbitMqConfig:Queue"], app.Configuration["RabbitMqConfig:DirectExchange"], string.Empty);
+
+app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
 //app.GetService<Consumer>().QueueBind("processar-nota-fiscal", 2);
 
 app.UseHttpsRedirection();
