@@ -9,19 +9,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton(sp => new ConnectionFactory()
-    {
-        HostName = builder.Configuration["RabbitMqConfig:Host"],
-        DispatchConsumersAsync = false,
-        ConsumerDispatchConcurrency = 1,
-        //UseBackgroundThreadsForIO = true
-    });
+{
+    HostName = builder.Configuration["RabbitMqConfig:Host"],
+    DispatchConsumersAsync = false,
+    ConsumerDispatchConcurrency = 1,
+    //UseBackgroundThreadsForIO = true
+});
 
 builder.Services.AddTransientWithRetry<IConnection, BrokerUnreachableException>(sp => sp.GetRequiredService<ConnectionFactory>().CreateConnection());
 builder.Services.AddTransient(sp => sp.GetRequiredService<IConnection>().CreateModel());
 
-builder.Services.AddTransient<ConsumerManager>();
 builder.Services.AddTransient<Publisher>();
 builder.Services.AddTransient<Consumer>();
+builder.Services.BuildServiceProvider()
+                .GetRequiredService<Consumer>()
+                .Initialize("processar-pagamentos", 2);
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
