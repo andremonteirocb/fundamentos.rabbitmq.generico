@@ -10,7 +10,6 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
         private readonly IModel model;
         private readonly ILogger<Consumer> logger;
         private EventingBasicConsumer eventingBasicConsumer;
-        private bool isRunning;
 
         public int MessagesPerSecond { get; private set; }
         public string Queue;
@@ -28,16 +27,6 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
 
         private void OnMessage(object sender, BasicDeliverEventArgs eventArgs)
         {
-            if (this.isRunning == false)
-            {
-                if (this.model.IsOpen)
-                {
-                    this.model.BasicReject(eventArgs.DeliveryTag, true);
-                    this.logger.LogInformation("Mensagem sofreu rejeição leve em função do desligamento do consumidor");
-                }
-                return;
-            }
-
             if (this.MessagesPerSecond != 0)
                 this.MessagesPerSecond.AsMessageRateToSleepTimeSpan().Wait();
 
@@ -57,44 +46,17 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
                 return;
             }
 
-
-            if (this.isRunning)
+            try
             {
-                try
-                {
-                    if (this.isRunning)
-                    {
-                        if (this.isRunning)
-                        {
-                            this.model.BasicAck(eventArgs.DeliveryTag, false);
-                        }
-                        else
-                        {
-                            this.logger.LogInformation("Abordando procesamento sem ack e sem commit");
-                        }
-                    }
-                    else
-                    {
-                        if (this.model.IsOpen)
-                        {
-                            this.model.BasicReject(eventArgs.DeliveryTag, true);
-                            this.logger.LogInformation("Mensagem sofreu rejeição leve em função do desligamento do consumidor");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (this.model.IsOpen)
-                    {
-                        this.model.BasicNack(eventArgs.DeliveryTag, false, true);
-                        this.logger.LogError(ex, "Mensagem foi reenfileirada para processamento futuro, o consumidor atual não conseguiu processá-la.");
-                    }
-                }
+                this.model.BasicAck(eventArgs.DeliveryTag, false);
             }
-            else
+            catch (Exception ex)
             {
-                if (this.model.IsOpen) 
-                this.model.BasicReject(eventArgs.DeliveryTag, true);
+                if (this.model.IsOpen)
+                {
+                    this.model.BasicNack(eventArgs.DeliveryTag, false, true);
+                    this.logger.LogError(ex, "Mensagem foi reenfileirada para processamento futuro, o consumidor atual não conseguiu processá-la.");
+                }
             }
         }
 
@@ -108,7 +70,6 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             else
                 this.model.SetPrefetchCount((ushort)(1000));
 
-            this.isRunning = true;
             this.model.BasicConsume(this.Queue, false, this.eventingBasicConsumer);
         }
     }
