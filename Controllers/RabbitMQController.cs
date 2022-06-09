@@ -19,7 +19,8 @@ namespace Fundamentos.RabbitMQ.Generico.Controllers
         [HttpPost]
         public IActionResult Publicar([FromBody] Message payment)
         {
-            _publisher.HandlePublish(payment, exchange: _configuration["RabbitMqConfig:DirectExchange"]);
+            _publisher.HandlePublish(payment, exchange: _configuration["RabbitMqConfig:FanoutExchange"]);
+
             return Ok();
         }
     }

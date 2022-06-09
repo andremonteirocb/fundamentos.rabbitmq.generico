@@ -31,10 +31,11 @@ if (app.Environment.IsDevelopment())
 }
 
 var model = app.GetService<IModel>();
-model.ExchangeDeclare(app.Configuration["RabbitMqConfig:DirectExchange"], ExchangeType.Direct, true);
+model.ExchangeDeclare(app.Configuration["RabbitMqConfig:FanoutExchange"], ExchangeType.Fanout, true);
 model.QueueDeclare(app.Configuration["RabbitMqConfig:Queue"], true, false, false, null);
-model.QueueBind(app.Configuration["RabbitMqConfig:Queue"], app.Configuration["RabbitMqConfig:DirectExchange"], string.Empty);
+model.QueueBind(app.Configuration["RabbitMqConfig:Queue"], app.Configuration["RabbitMqConfig:FanoutExchange"], string.Empty);
 
+app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
 app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
 //app.GetService<Consumer>().QueueBind("processar-nota-fiscal", 2);
 
