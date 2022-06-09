@@ -36,7 +36,6 @@ model.QueueDeclare(app.Configuration["RabbitMqConfig:Queue"], true, false, false
 model.QueueBind(app.Configuration["RabbitMqConfig:Queue"], app.Configuration["RabbitMqConfig:FanoutExchange"], string.Empty);
 
 app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
-app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
 //app.GetService<Consumer>().QueueBind("processar-nota-fiscal", 2);
 
 app.UseHttpsRedirection();
