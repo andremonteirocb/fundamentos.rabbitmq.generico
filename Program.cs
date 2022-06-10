@@ -9,15 +9,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton(sp => new ConnectionFactory()
-{
-    HostName = builder.Configuration["RabbitMqConfig:Host"],
-    DispatchConsumersAsync = false,
-    ConsumerDispatchConcurrency = 1,
-    //UseBackgroundThreadsForIO = true
-});
+builder.Services.AddSingleton((sp) => 
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMqConfig:Host"]
+    }
+);
 
-builder.Services.AddTransientWithRetry<IConnection, BrokerUnreachableException>(sp => sp.GetRequiredService<ConnectionFactory>().CreateConnection());
+builder.Services.AddSingletonWithRetry<IConnection, BrokerUnreachableException>(sp => sp.GetRequiredService<ConnectionFactory>().CreateConnection());
 builder.Services.AddTransient(sp => sp.GetRequiredService<IConnection>().CreateModel());
 
 builder.Services.AddTransient<Publisher>();
