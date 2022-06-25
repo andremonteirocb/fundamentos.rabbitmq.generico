@@ -8,14 +8,12 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
     public class Publisher
     {
         private readonly IModel model;
-        private readonly IConnection rabbitMqConnection;
         private readonly ILogger<Publisher> logger;
         public string Id { get; }
 
-        public Publisher(IModel model, IConnection rabbitMqConnection, ILogger<Publisher> logger)
+        public Publisher(IModel model, ILogger<Publisher> logger)
         {
             this.model = model;
-            this.rabbitMqConnection = rabbitMqConnection;
             this.logger = logger;
             this.Id = Guid.NewGuid().ToString("D");
         }
@@ -42,9 +40,6 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
 
             this.model.Close();
             this.model.Dispose();
-
-            this.rabbitMqConnection.Close();
-            this.rabbitMqConnection.Dispose();
         }
     }
 }
