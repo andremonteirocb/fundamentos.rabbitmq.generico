@@ -9,10 +9,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton((sp) => 
+builder.Services.AddSingleton((sp) =>
     new ConnectionFactory()
     {
-        HostName = builder.Configuration["RabbitMqConfig:Host"]
+        //HostName = builder.Configuration["RabbitMqConfig:Host"],
+        Uri = new Uri(builder.Configuration["RabbitMqConfig:Host"])
     }
 );
 
