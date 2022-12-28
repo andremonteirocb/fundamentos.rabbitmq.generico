@@ -3,6 +3,7 @@ using RabbitMQ.Client.Exceptions;
 using Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue;
 using Fundamentos.RabbitMQ.Generico.Extensions;
 using Fundamentos.RabbitMQ.Generico.Core.Infrastructure;
+using Fundamentos.RabbitMQ.Generico.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -21,7 +22,7 @@ builder.Services.AddSingletonWithRetry<IConnection, BrokerUnreachableException>(
 builder.Services.AddTransientWithRetry<IModel, Exception>(sp => sp.GetRequiredService<IConnection>().CreateModel());
 
 builder.Services.AddTransient<Publisher>();
-builder.Services.AddTransient<Consumer>();
+builder.Services.AddTransient<Consumer<Message>>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -35,7 +36,13 @@ model.ExchangeDeclare(app.Configuration["RabbitMqConfig:FanoutExchange"], Exchan
 model.QueueDeclare(app.Configuration["RabbitMqConfig:Queue"], true, false, false, null);
 model.QueueBind(app.Configuration["RabbitMqConfig:Queue"], app.Configuration["RabbitMqConfig:FanoutExchange"], string.Empty);
 
-app.GetService<Consumer>().QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2);
+app.GetService<Consumer<Message>>()
+    .QueueBind(app.Configuration["RabbitMqConfig:Queue"], 2, Dispatch);
+
+void Dispatch(Message message)
+{
+    Console.WriteLine(message.Serialize().ToByteArray().ToReadOnlyMemory());
+}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

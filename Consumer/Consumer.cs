@@ -1,21 +1,22 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Fundamentos.RabbitMQ.Generico.Extensions;
-using Fundamentos.RabbitMQ.Generico.Models;
 
 namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
 {
-    public class Consumer
+    public class Consumer<T>
     {
         private readonly IModel model;
-        private readonly ILogger<Consumer> logger;
+        private readonly ILogger<T> logger;
         private EventingBasicConsumer eventingBasicConsumer;
 
         public int MessagesPerSecond { get; private set; }
+        public Action<T> Action { get; private set; }
+
         public string Queue;
         public string Id { get; }
 
-        public Consumer(IModel model, ILogger<Consumer> logger)
+        public Consumer(IModel model, ILogger<T> logger)
         {
             this.model = model;
             this.logger = logger;
@@ -30,11 +31,11 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             if (this.MessagesPerSecond != 0)
                 this.MessagesPerSecond.AsMessageRateToSleepTimeSpan().Wait();
 
-            Message message;
+            T result = default(T);
 
             try
             {
-                message = eventArgs.Body.ToArray().ToUTF8String().Deserialize<Message>();
+                result = eventArgs.Body.ToArray().ToUTF8String().Deserialize<T>();
             }
             catch (Exception ex)
             {
@@ -48,6 +49,7 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
 
             try
             {
+                Action(result);
                 this.model.BasicAck(eventArgs.DeliveryTag, false);
             }
             catch (Exception ex)
@@ -60,10 +62,11 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             }
         }
 
-        public void QueueBind(string queue, int messagesPerSecond)
+        public void QueueBind(string queue, int messagesPerSecond, Action<T> action)
         {
             this.Queue = queue;
             this.MessagesPerSecond = messagesPerSecond;
+            this.Action = action;
 
             if (this.MessagesPerSecond > 0)
                 this.model.SetPrefetchCount((ushort)(this.MessagesPerSecond * 5));
