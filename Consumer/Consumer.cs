@@ -39,12 +39,9 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             }
             catch (Exception ex)
             {
-                if (this.model.IsOpen)
-                {
-                    this.model.BasicReject(eventArgs.DeliveryTag, false);
-                    this.logger.LogError(ex, "Mensagem sofreu uma rejeição grave em função de um erro na desserialização. A mensagem será descartada");
-                }
-                return;
+                this.model.BasicReject(eventArgs.DeliveryTag, false);
+                this.logger.LogError(ex, "Mensagem sofreu uma rejeição grave em função de um erro na desserialização. A mensagem será descartada");
+                throw;
             }
 
             try
@@ -54,11 +51,8 @@ namespace Fundamentos.RabbitMQ.Generico.Core.Infrastructure.Queue
             }
             catch (Exception ex)
             {
-                if (this.model.IsOpen)
-                {
-                    this.model.BasicNack(eventArgs.DeliveryTag, false, true);
-                    this.logger.LogError(ex, "Mensagem foi reenfileirada para processamento futuro, o consumidor atual não conseguiu processá-la.");
-                }
+                this.model.BasicNack(eventArgs.DeliveryTag, false, true);
+                this.logger.LogError(ex, "Mensagem foi reenfileirada para processamento futuro, o consumidor atual não conseguiu processá-la.");
             }
         }
 
